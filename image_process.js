@@ -174,3 +174,11 @@ exports.pixelateImage = async (image, size = 5, { width = image.getWidth(), heig
 exports.contrastImage = async (image, contrastLevel = 0.4) => {
   await image.contrast(contrastLevel);
 }
+
+exports.getBuffer = async (image) => {
+  return await image.getBufferAsync(image.getExtension());
+}
+
+exports.getDataURI = async (image) => {
+  return await image.getBase64Async(image.getExtension());
+}

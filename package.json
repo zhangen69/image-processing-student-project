@@ -2,7 +2,6 @@
   "name": "imageprocessingstudentproject",
   "version": "1.0.0",
   "description": "",
-  "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -13,6 +12,11 @@
     "@jimp/plugin-fisheye": "^0.9.8",
     "@jimp/plugin-shadow": "^0.9.8",
     "@jimp/plugin-threshold": "^0.9.8",
-    "jimp": "^0.9.6"
+    "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "helmet": "^3.22.0",
+    "jimp": "^0.9.8",
+    "nodemon": "^2.0.2"
   }
 }
