@@ -135,3 +135,42 @@ exports.fisheyeImage = async (image, level = 2) => {
 exports.thresholdImage = async (image, max = 150) => {
   await image.threshold({ max });
 }
+
+exports.opacityImage = async (image, opacityLevel = 0.5) => {
+  await image.opacity(opacityLevel);
+}
+
+exports.greyscaleImage = async (image) => {
+  await image.greyscale();
+  // await image.color([
+  //   { apply: 'greyscale', params: [100] } // amount
+  // ]);
+}
+
+exports.compositeImage = async (image, watermarkImage) => {
+  await image.composite(watermarkImage, 0, 0, {
+    mode: jimp.BLEND_SOURCE_OVER,
+    opacityDest: 1,
+    opacitySource: 0.5
+  });
+}
+
+exports.posterizeImage = async (image, level = 1) => {
+  await image.posterize(level);
+}
+
+exports.sepiaImage = async (image) => {
+  await image.sepia();
+}
+
+exports.fadeImage = async (image, fadeLevel = 0.5) => {
+  await image.fade(fadeLevel);
+}
+
+exports.pixelateImage = async (image, size = 5, { width = image.getWidth(), height = image.getHeight(), x = 0, y = 0 }) => {
+  await image.pixelate(size, x, y, width, height);
+}
+
+exports.contrastImage = async (image, contrastLevel = 0.4) => {
+  await image.contrast(contrastLevel);
+}
