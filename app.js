@@ -7,7 +7,7 @@ const image_path = './images/cat-1.jpg';
 const blitImage_path = './images/blit-demo.png';
 const maskImage_path = './images/mask-1.png';
 // const maskImage_path = './images/mask-2.png';
-
+ 
 imageProcess.readImage(image_path).then(async (image_result) => {
   if (!image_result.succeeded) {
     console.error(image_result.error_message);
