@@ -5,14 +5,28 @@
   <img [src]="url" id="uploadedImage" #imageOutput>
   <div class="toolbars">
     <h3>Toolbars</h3>
-    <div class="tool-item" (click)="selectTool('resize')">Resize Image</div>
+    <div class="tool-item" (click)="selectTool('resize')" [ngClass]="{'active': selectedTool === 'resize'}">Resize Image</div>
+    <div class="tool-item" (click)="selectTool('blur')" [ngClass]="{'active': selectedTool === 'blur'}">Blur Image</div>
+    <div class="tool-item" (click)="selectTool('invert')" [ngClass]="{'active': selectedTool === 'invert'}">Invert Image</div>
+    <div class="tool-item" (click)="selectTool('flip')" [ngClass]="{'active': selectedTool === 'flip'}">Flip Image</div>
+    <div class="tool-item" (click)="selectTool('circle')" [ngClass]="{'active': selectedTool === 'circle'}">Circle Image</div>
+    <div class="tool-item" (click)="selectTool('contrast')" [ngClass]="{'active': selectedTool === 'contrast'}">contrast Image</div>
+    <div class="tool-item" (click)="selectTool('greyscale')" [ngClass]="{'active': selectedTool === 'greyscale'}">greyscale Image</div>
+    <div class="tool-item" (click)="selectTool('opacity')" [ngClass]="{'active': selectedTool === 'opacity'}">opacity Image</div>
+    <div class="tool-item" (click)="selectTool('scale')" [ngClass]="{'active': selectedTool === 'scale'}">scale Image</div>
+    <div class="tool-item" (click)="selectTool('rotate')" [ngClass]="{'active': selectedTool === 'rotate'}">rotate Image</div>
+    <div class="tool-item" (click)="selectTool('printText')" [ngClass]="{'active': selectedTool === 'printText'}">printText</div>
+    <div class="tool-item" (click)="selectTool('setImageCover')" [ngClass]="{'active': selectedTool === 'setImageCover'}">setImageCover</div>
   </div>
-  <div class="options-wrapper">
+  <div class="options-wrapper" *ngIf="selectedTool">
+    <h3>Options</h3>
     <div class="resize-options" *ngIf="selectedTool === 'resize'">
-      <span>Resize To:</span>
-      Width: <input type="number" [(ngModel)]="formData.width">
-      Height: <input type="number" [(ngModel)]="formData.height">
+      <div>Width: <input type="number" [(ngModel)]="formData.width"></div>
+      <div>Height: <input type="number" [(ngModel)]="formData.height"></div>
       <button (click)="onSubmit(formData, selectedTool)">Resize Now</button>
     </div>
   </div>
+</div>
+<div class="error" *ngIf="error">
+  <pre>{{ error | json}}</pre>
 </div>

@@ -1,3 +1,38 @@
-input[type=file] {
+input[type="file"] {
   display: none;
+}
+
+.image-container {
+  display: flex;
+  flex-direction: row;
+
+  img {
+    align-self: baseline;
+  }
+
+  .toolbars {
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #999;
+    align-items: center;
+
+    .tool-item {
+      cursor: pointer;
+      background-color: #999;
+      color: #fff;
+      padding: 10px 5px;
+      border-radius: 5px;
+      font-weight: bold;
+      margin-bottom: 10px;
+
+      &.active {
+        background-color: #07f;
+      }
+    }
+  }
+
+  .options-wrapper {
+    padding: 10px;
+  }
 }

@@ -17,6 +17,8 @@ export class AppComponent {
   observer;
   selectedTool = null;
   formData: any = {};
+  apiUrl = `${environment.apiUrl}/api/image/`;
+  error = null;
 
   constructor(private eleRef: ElementRef, private http: HttpClient) {}
 
@@ -52,11 +54,10 @@ export class AppComponent {
   }
 
   onSubmit(formData, type) {
-    const apiUrl = `${environment.apiUrl}/api/image/resize`;
     let observable: Observable<any> = null;
     switch (type) {
       case 'resize':
-        observable = this.http.post(apiUrl, {
+        observable = this.http.post(`${this.apiUrl}/resize`, {
           image: this.originalUrl,
           options: { width: formData.width, height: formData.height },
         });
@@ -65,7 +66,15 @@ export class AppComponent {
     observable.subscribe({
       next: (res: any) => {
         this.url = res.image;
+        if (this.error) {
+          this.error = null;
+        }
       },
+      error: (err) => {
+        this.error = err;
+        window.alert('Failed to process image');
+        console.error('failed to process image', err);
+      }
     });
   }
 }
