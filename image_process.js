@@ -6,13 +6,18 @@ const fisheye = require('@jimp/plugin-fisheye');
 const threshold = require('@jimp/plugin-threshold');
 const jimp = configure({ plugins: [circle, shadow, fisheye, threshold] });
 
-exports.readImage = async (image_path) => {
+exports.readImage = async (image_path, mimeType) => {
   let error_message = null;
   let image;
   let succeeded = false;
 
   try {
-    image = await jimp.read(image_path);
+    if (mimeType) {
+      
+      image = await jimp.read(image_path, mimeType);
+    } else {
+      image = await jimp.read(image_path);
+    }
     succeeded = true;
   } catch (error) {
     error_message = error;
@@ -34,6 +39,10 @@ exports.resizeImage = async (image, width, height, mode) => {
 
 exports.writeImage = async (image, filePath) => {
   await image.writeAsync(`${filePath}`);
+}
+
+exports.writeBase64Image = async (image) => {
+  return await image.getBase64(jimp.AUTO);
 }
 
 exports.blitImage = async (image, blitImage, { x, y }) => {

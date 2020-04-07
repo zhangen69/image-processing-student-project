@@ -1,6 +1,6 @@
 <input type="file" name="file" id="file" (change)="onFileChanged($event)" #fileInput>
 <button type="button" (click)="fileInput.click()">Select File</button>
-<button type="button" (click)="onStart(imageOutput)" [disabled]="!url">Start</button>
+<button type="button" (click)="onStart(url)" [disabled]="!url">Start</button>
 <div class="image-container">
   <img [src]="url" id="uploadedImage" *ngIf="url" #imageOutput>
 </div>

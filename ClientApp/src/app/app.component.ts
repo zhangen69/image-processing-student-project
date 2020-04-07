@@ -30,11 +30,12 @@ export class AppComponent {
     }
   }
 
-  onStart(elementRef: ElementRef) {
+  onStart(image) {
     const apiUrl = `${environment.apiUrl}/api/image/resize`;
-    const observer = this.http.post(apiUrl, { image: elementRef, options: { width: 100, height: 100 } });
+    const observer = this.http.post(apiUrl, { image, options: { width: 100, height: 100 } });
     observer.subscribe({
-      next: (res) => {
+      next: (res: any) => {
+        this.url = res.image;
         console.log(res);
       }
     });
