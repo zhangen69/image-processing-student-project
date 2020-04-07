@@ -1,6 +1,18 @@
 <input type="file" name="file" id="file" (change)="onFileChanged($event)" #fileInput>
 <button type="button" (click)="fileInput.click()">Select File</button>
-<button type="button" (click)="onStart(url)" [disabled]="!url">Start</button>
-<div class="image-container">
-  <img [src]="url" id="uploadedImage" *ngIf="url" #imageOutput>
+<!-- <button type="button" (click)="onStart(url)" [disabled]="!url">Start</button> -->
+<div class="image-container" *ngIf="url">
+  <img [src]="url" id="uploadedImage" #imageOutput>
+  <div class="toolbars">
+    <h3>Toolbars</h3>
+    <div class="tool-item" (click)="selectTool('resize')">Resize Image</div>
+  </div>
+  <div class="options-wrapper">
+    <div class="resize-options" *ngIf="selectedTool === 'resize'">
+      <span>Resize To:</span>
+      Width: <input type="number" [(ngModel)]="formData.width">
+      Height: <input type="number" [(ngModel)]="formData.height">
+      <button (click)="onSubmit(formData, selectedTool)">Resize Now</button>
+    </div>
+  </div>
 </div>
