@@ -17,6 +17,7 @@ export class AppComponent {
   @ViewChild('imageOutput') imageOutput: ElementRef;
   observer;
   selectedTool = null;
+  selectedHistoryItem = null;
   formData: any = {
     fontSize: 'FONT_SANS_8',
     fontColor: 'BLACK',
@@ -25,7 +26,7 @@ export class AppComponent {
     width: 500,
     height: 500,
     level: 1,
-    degree: 45,
+    degree: 90,
     flipHorizontal: false,
     flipVertical: false,
   };
@@ -43,6 +44,11 @@ export class AppComponent {
       reader.readAsDataURL(file);
       reader.onload = () => {
         // called once readAsDataURL is completed
+        this.history.push({
+          id: this.createRandomString(),
+          name: 'Select File: ' + file.name,
+          image: reader.result,
+        });
         this.originalUrl = this.url = reader.result; // add source to image
       };
     }
@@ -66,79 +72,90 @@ export class AppComponent {
     });
   }
 
-  onRevertUrl(id = null) {
-    this.history.push({ id: this.createRandomString(), image: this.url });
-    if (!id) {
+  onRevertUrl(item = null) {
+    if (!item) {
       this.url = this.originalUrl;
     } else {
-      this.url = this.history.find(x => x.id === id).image;
+      this.url = item.image;
     }
   }
 
   createRandomString() {
-    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    return (
+      Math.random().toString(36).substring(2, 15) +
+      Math.random().toString(36).substring(2, 15)
+    );
   }
 
-  onSubmit(formData, type, url) {
+  onSubmit(formData: any, type: string, url: string) {
+    const historyItem = {
+      id: this.createRandomString(),
+      name: null,
+      image: null,
+    };
     let observable: Observable<any> = null;
 
     switch (type) {
       case 'resize':
-        observable = this.http.post(`${this.apiUrl}/${type}`, {
-          image: url,
-          options: { width: formData.width, height: formData.height },
-        });
-        break;
       case 'cover':
+        historyItem.name = `${type.toUpperCase()}: w=${formData.width}px, h=${
+          formData.height
+        }px`;
         observable = this.http.post(`${this.apiUrl}/${type}`, {
           image: url,
           options: { width: formData.width, height: formData.height },
         });
         break;
       case 'blur':
-        observable = this.http.post(`${this.apiUrl}/${type}`, {
-          image: url,
-          options: { level: formData.level },
-        });
-        break;
       case 'opacity':
-        observable = this.http.post(`${this.apiUrl}/${type}`, {
-          image: url,
-          options: { level: formData.level },
-        });
-        break;
       case 'contrast':
-        observable = this.http.post(`${this.apiUrl}/${type}`, {
-          image: url,
-          options: { level: formData.level },
-        });
-        break;
       case 'scale':
+        historyItem.name = `${type.toUpperCase()}: level=${formData.level}`;
         observable = this.http.post(`${this.apiUrl}/${type}`, {
           image: url,
           options: { level: formData.level },
         });
         break;
       case 'rotate':
+        historyItem.name = `${type.toUpperCase()}: degree=${
+          formData.degree
+        }&deg;`;
         observable = this.http.post(`${this.apiUrl}/${type}`, {
           image: url,
           options: { degree: formData.degree },
         });
         break;
       case 'flip':
+        historyItem.name = `${type.toUpperCase()}: horizontal=${
+          formData.flipHorizontal ? 'Yes' : 'No'
+        }, vertical=${formData.flipVertical ? 'Yes' : 'No'};`;
         observable = this.http.post(`${this.apiUrl}/${type}`, {
           image: url,
-          options: { flipHorizontal: formData.flipHorizontal, flipVertical: formData.flipVertical },
+          options: {
+            flipHorizontal: formData.flipHorizontal,
+            flipVertical: formData.flipVertical,
+          },
         });
         break;
       case 'printText':
+        historyItem.name = `${type.toUpperCase()}: size=${
+          formData.fontSize
+        }, text=${formData.text}, color=${formData.fontColor}, x=${
+          formData.positionX
+        }, y=${formData.positionY}`;
         const font = formData.fontSize + '_' + formData.fontColor;
         observable = this.http.post(`${this.apiUrl}/${type}`, {
           image: url,
-          options: { font, text: formData.text, x: formData.positionX, y: formData.positionY },
+          options: {
+            font,
+            text: formData.text,
+            x: formData.positionX,
+            y: formData.positionY,
+          },
         });
         break;
       default:
+        historyItem.name = `${type.toUpperCase()}`;
         observable = this.http.post(`${this.apiUrl}/${type}`, {
           image: url,
           options: null,
@@ -146,11 +163,10 @@ export class AppComponent {
         break;
     }
 
-    const subscription = observable.pipe(
-      retry(3)
-    ).subscribe({
+    const subscription = observable.pipe(retry(3)).subscribe({
       next: (res: any) => {
-        this.history.push({ id: this.createRandomString(), image: this.url });
+        historyItem.image = res.image;
+        this.history.push(historyItem);
         this.url = res.image;
         if (this.error) {
           this.error = null;
@@ -163,7 +179,7 @@ export class AppComponent {
       },
       complete: () => {
         subscription.unsubscribe();
-      }
+      },
     });
   }
 }

@@ -134,7 +134,7 @@ router.post('/printText', async (req, res) => {
   const buffer = getBuffer(req.body.image);
   try {
     const image = await Jimp.read(buffer);
-    const fontBitmap = await jimp.loadFont(Jimp[font]);
+    const fontBitmap = await Jimp.loadFont(Jimp[font]);
     image.print(fontBitmap, x, y, text);
     const output = await image.getBase64Async(Jimp.AUTO);
     res.status(200).json({ code: 0, image: output });

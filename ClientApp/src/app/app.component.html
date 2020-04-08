@@ -3,9 +3,12 @@
   <h3>Please select an image to continue:</h3>
   <input type="file" name="file" id="file" accept="image/x-png,image/gif,image/jpeg" (change)="onFileChanged($event)" #fileInput>
   <button type="button" class="btn-select" (click)="fileInput.click()">Select File</button>
-  <button type="button" class="btn-select" (click)="onRevertUrl()" *ngIf="url">Use Original</button>
+  <button type="button" class="btn-select" (click)="onRevertUrl()" *ngIf="url && url !== originalUrl">Use Original</button>
+  <select name="" id="" [(ngModel)]="selectedHistoryItem" (change)="onRevertUrl(selectedHistoryItem)">
+    <option value="null">-- No History Yet --</option>
+    <option [ngValue]="item" *ngFor="let item of history">{{ item.name }}</option>
+  </select>
 </div>
-<!-- <button type="button" (click)="onStart(url)" [disabled]="!url">Start</button> -->
 <div class="image-container">
   <div class="image-wrapper">
     <img [src]="url" id="uploadedImage" *ngIf="url" #imageOutput>
