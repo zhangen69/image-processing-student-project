@@ -1,13 +1,25 @@
 <div class="page-header">
-  <h1>Image Processing Project</h1>
-  <h3>Please select an image to continue:</h3>
-  <input type="file" name="file" id="file" accept="image/x-png,image/gif,image/jpeg" (change)="onFileChanged($event)" #fileInput>
-  <button type="button" class="btn-select" (click)="fileInput.click()">Select File</button>
-  <button type="button" class="btn-select" (click)="onRevertUrl()" *ngIf="url && url !== originalUrl">Use Original</button>
-  <select name="" id="" [(ngModel)]="selectedHistoryItem" (change)="onRevertUrl(selectedHistoryItem)">
-    <option value="null">-- No History Yet --</option>
-    <option [ngValue]="item" *ngFor="let item of history">{{ item.name }}</option>
-  </select>
+  <div class="title">
+    <h1>Image Processing Project</h1>
+    <h3>Please select an image to continue:</h3>
+  </div>
+  <div class="action-group">
+    <input type="file" name="file" id="file" accept="image/x-png,image/gif,image/jpeg" (change)="onFileChanged($event)" #fileInput>
+    <button type="button" class="btn-select" (click)="fileInput.click()">Select File</button>
+    <button type="button" class="btn-select" (click)="onSaveImage(url)" *ngIf="url">Save Image</button>
+    <div class="history-wrapper dropdown">
+      <div class="title">History</div>
+      <div class="dropdown-content">
+        <ul *ngIf="history && history.length > 0; else noHistoryTemplate">
+          <li *ngFor="let item of history" [class]="{ 'active': item === selectedHistoryItem }" (click)="onRevertUrl(item)">{{ item.name }}</li>
+        </ul>
+        <ng-template #noHistoryTemplate>
+          <p>No Action Yet</p>
+        </ng-template>
+
+      </div>
+    </div>
+  </div>
 </div>
 <div class="image-container">
   <div class="image-wrapper">
@@ -19,20 +31,21 @@
     <div class="tool-item" (click)="selectTool('blur')" [ngClass]="{'active': selectedTool === 'blur'}">Blur</div>
     <div class="tool-item" (click)="selectTool('invert')" [ngClass]="{'active': selectedTool === 'invert'}">Invert</div>
     <div class="tool-item" (click)="selectTool('flip')" [ngClass]="{'active': selectedTool === 'flip'}">Flip</div>
-    <!-- <div class="tool-item" (click)="selectTool('circle')" [ngClass]="{'active': selectedTool === 'circle'}">Circle</div> -->
     <div class="tool-item" (click)="selectTool('contrast')" [ngClass]="{'active': selectedTool === 'contrast'}">Contrast</div>
     <div class="tool-item" (click)="selectTool('greyscale')" [ngClass]="{'active': selectedTool === 'greyscale'}">Greyscale</div>
     <div class="tool-item" (click)="selectTool('opacity')" [ngClass]="{'active': selectedTool === 'opacity'}">Opacity</div>
     <div class="tool-item" (click)="selectTool('scale')" [ngClass]="{'active': selectedTool === 'scale'}">Scale</div>
     <div class="tool-item" (click)="selectTool('rotate')" [ngClass]="{'active': selectedTool === 'rotate'}">Rotate</div>
     <div class="tool-item" (click)="selectTool('printText')" [ngClass]="{'active': selectedTool === 'printText'}">Print Text</div>
-    <div class="tool-item" (click)="selectTool('cover')" [ngClass]="{'active': selectedTool === 'cover'}">Set Cover</div>
+    <div class="tool-item" (click)="selectTool('sepia')" [ngClass]="{'active': selectedTool === 'sepia'}">Sepia</div>
+    <div class="tool-item" (click)="selectTool('posterize')" [ngClass]="{'active': selectedTool === 'posterize'}">Posterize</div>
+    <!-- <div class="tool-item" (click)="selectTool('background')" [ngClass]="{'active': selectedTool === 'background'}">Background</div> -->
   </div>
   <div class="options-container" *ngIf="selectedTool">
     <h3>Options</h3>
-    <div class="option-wrapper" [ngSwitch]="selectedTool">
+    <div class="option-wrapper">
       <!-- printText -->
-      <div class="resize-options" *ngSwitchCase="'printText'">
+      <div class="resize-options" *ngIf="shouldShowOption('printText', selectedTool)">
         <div class="form-group">
           <label for="text">Text</label>
           <input type="text" id="text" [(ngModel)]="formData.text">
@@ -65,18 +78,7 @@
         <pre>Note: X and Y is the starting coordinate place the text</pre>
       </div>
       <!-- resize -->
-      <div class="resize-options" *ngSwitchCase="'resize'">
-        <div class="form-group">
-          <label for="">Width</label>
-          <input type="number" [(ngModel)]="formData.width">
-        </div>
-        <div class="form-group">
-          <label for="">Height</label>
-          <input type="number" [(ngModel)]="formData.height">
-        </div>
-      </div>
-      <!-- cover -->
-      <div class="resize-options" *ngSwitchCase="'cover'">
+      <div class="resize-options" *ngIf="shouldShowOption('size', selectedTool)">
         <div class="form-group">
           <label for="">Width</label>
           <input type="number" [(ngModel)]="formData.width">
@@ -87,42 +89,31 @@
         </div>
       </div>
       <!-- blur -->
-      <div class="resize-options" *ngSwitchCase="'blur'">
-        <div class="form-group">
-          <label for="">Level</label>
-          <input type="number" [(ngModel)]="formData.level">
-        </div>
-      </div>
-      <!-- opacity -->
-      <div class="resize-options" *ngSwitchCase="'opacity'">
-        <div class="form-group">
-          <label for="">Level</label>
-          <input type="number" [(ngModel)]="formData.level">
-        </div>
-      </div>
-      <!-- contrast -->
-      <div class="resize-options" *ngSwitchCase="'contrast'">
-        <div class="form-group">
-          <label for="">Level</label>
-          <input type="number" [(ngModel)]="formData.level">
-        </div>
-      </div>
       <!-- scale -->
-      <div class="resize-options" *ngSwitchCase="'scale'">
+      <!-- opacity -->
+      <!-- contrast -->
+      <div class="resize-options" *ngIf="shouldShowOption('level', selectedTool)">
         <div class="form-group">
           <label for="">Level</label>
           <input type="number" [(ngModel)]="formData.level">
+        </div>
+      </div>
+      <!-- background -->
+      <div class="resize-options" *ngIf="shouldShowOption('color', selectedTool)">
+        <div class="form-group">
+          <label for="">Color</label>
+          <input type="text" [(ngModel)]="formData.color" placeholder="Please enter hex color code, i.e. 000000, FFFFFF">
         </div>
       </div>
       <!-- rotate -->
-      <div class="resize-options" *ngSwitchCase="'rotate'">
+      <div class="resize-options" *ngIf="shouldShowOption('degree', selectedTool)">
         <div class="form-group">
           <label for="">Degree</label>
           <input type="number" [(ngModel)]="formData.degree">
         </div>
       </div>
       <!-- flip -->
-      <div class="resize-options" *ngSwitchCase="'flip'">
+      <div class="resize-options" *ngIf="shouldShowOption('flip', selectedTool)">
         <div class="form-group">
           <label for="flipHorizontal" class="checkbox-group">
             <input type="checkbox" name="flipHorizontal" id="flipHorizontal" value="horizontal" [(ngModel)]="formData.flipHorizontal">
@@ -138,8 +129,13 @@
       </div>
     </div>
     <button type="button" class="btn-process" (click)="onSubmit(formData, selectedTool, url)" [disabled]="!url">Process</button>
+    <pre *ngIf="!url">Please select an image first!</pre>
   </div>
 </div>
 <div class="error" *ngIf="error">
   <pre>{{ error | json}}</pre>
+</div>
+<div class="page-loading" *ngIf="onLoading">
+  <div class="overlay"></div>
+  <div>Image is Processing...</div>
 </div>

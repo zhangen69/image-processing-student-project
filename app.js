@@ -38,12 +38,11 @@ router.post('/resize', async (req, res) => {
   }
 });
 
-router.post('/cover', async (req, res) => {
-  const { width, height } = req.body.options;
+router.post('/sepia', async (req, res) => {
   const buffer = getBuffer(req.body.image);
   try {
     const image = await Jimp.read(buffer);
-    image.cover(width, height);
+    image.sepia();
     const output = await image.getBase64Async(Jimp.AUTO);
     res.status(200).json({ code: 0, image: output });
   } catch (error) {
@@ -57,6 +56,33 @@ router.post('/blur', async (req, res) => {
   try {
     const image = await Jimp.read(buffer);
     image.blur(level);
+    const output = await image.getBase64Async(Jimp.AUTO);
+    res.status(200).json({ code: 0, image: output });
+  } catch (error) {
+    res.status(500).json(error);
+  }
+});
+
+router.post('/posterize', async (req, res) => {
+  const { level } = req.body.options;
+  const buffer = getBuffer(req.body.image);
+  try {
+    const image = await Jimp.read(buffer);
+    image.posterize(level);
+    const output = await image.getBase64Async(Jimp.AUTO);
+    res.status(200).json({ code: 0, image: output });
+  } catch (error) {
+    res.status(500).json(error);
+  }
+});
+
+router.post('/background', async (req, res) => {
+  const { color } = req.body.options;
+  const buffer = getBuffer(req.body.image);
+  try {
+    const image = await Jimp.read(buffer);
+    const hexdecimal = Number('0x' + color + '00').toString(16);
+    image.background(0xFFFFFFFF);
     const output = await image.getBase64Async(Jimp.AUTO);
     res.status(200).json({ code: 0, image: output });
   } catch (error) {
@@ -108,7 +134,7 @@ router.post('/rotate', async (req, res) => {
   const buffer = getBuffer(req.body.image);
   try {
     const image = await Jimp.read(buffer);
-    image.rotate(degree);
+    image.rotate(degree, false);
     const output = await image.getBase64Async(Jimp.AUTO);
     res.status(200).json({ code: 0, image: output });
   } catch (error) {

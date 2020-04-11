@@ -1,20 +1,84 @@
 .page-header {
   height: 150px;
   padding: 0 20px;
-  input[type="file"] {
-    display: none;
-  }
+  display: flex;
+  flex-direction: column;
 
-  .btn-select {
-    background-color: #999;
-    border: none;
-    border-radius: 5px;
-    padding: 10px 20px;
-    color: #e1e1e1;
-    font-weight: bold;
-    box-shadow: 2px 2px 10px 0 #999;
-    cursor: pointer;
-    margin-right: 15px;
+  .action-group {
+    display: flex;
+    flex-direction: row;
+
+    input[type="file"] {
+      display: none;
+    }
+
+    .btn-select {
+      background-color: #999;
+      border: none;
+      border-radius: 5px;
+      padding: 10px 20px;
+      color: #e1e1e1;
+      font-weight: bold;
+      box-shadow: 2px 2px 10px 0 #999;
+      cursor: pointer;
+      margin-right: 15px;
+    }
+
+    .history-wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      .title {
+        box-shadow: 2px 2px 10px 0 #999;
+        padding: 10px 20px;
+        border-radius: 5px;
+        background-color: #999;
+        color: #e1e1e1;
+        cursor: pointer;
+      }
+
+      .dropdown-content {
+        display: none;
+        position: absolute;
+        top: 35px;
+        left: 0;
+        background-color: #f9f9f9;
+        min-width: 160px;
+        box-shadow: 0px 5px 10px 0px rgba(0, 0, 0, 0.3);
+        z-index: 1;
+        border-radius: 5px;
+
+        ul {
+          list-style: none;
+          padding: 0;
+          margin: 0;
+
+          li {
+            padding: 10px;
+            cursor: pointer;
+            white-space: nowrap;
+            border-bottom: 1px solid #ccc;
+
+            &.active {
+              background-color: rgb(179, 209, 212);
+            }
+
+            &:hover {
+              background-color: #eee;
+            }
+
+          }
+        }
+        p {
+          padding: 0 10px;
+        }
+      }
+
+      &:hover .dropdown-content {
+        display: block;
+      }
+    }
   }
 }
 
@@ -100,4 +164,27 @@
       }
     }
   }
+}
+
+.page-loading {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  left: 0;
+  top: 0;
+  background-color: rgba(0, 0, 0, 0.3);
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 3rem;
+  color: #fff;
+  font-weight: bold;
+  font-family: Arial, Helvetica, sans-serif;
+
+  // .overlay {
+  //   background-color: #000000;
+  //   opacity: 0.3;
+  //   hei
+  // }
 }

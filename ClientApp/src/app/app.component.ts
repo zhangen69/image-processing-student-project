@@ -1,6 +1,6 @@
 import { environment } from './../environments/environment';
 import { Component, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
-import { fromEvent, from, Observable } from 'rxjs';
+import { fromEvent, from, Observable, asapScheduler } from 'rxjs';
 import { retry } from 'rxjs/operators';
 import { HttpClient } from '@angular/common/http';
 
@@ -11,7 +11,6 @@ import { HttpClient } from '@angular/common/http';
 })
 export class AppComponent {
   title = 'ng-image-processing-app';
-  originalUrl = null;
   url = null;
   image = null;
   @ViewChild('imageOutput') imageOutput: ElementRef;
@@ -29,10 +28,12 @@ export class AppComponent {
     degree: 90,
     flipHorizontal: false,
     flipVertical: false,
+    color: null,
   };
   apiUrl = `${environment.apiUrl}/api/image`;
   error = null;
   history = [];
+  onLoading = false;
 
   constructor(private eleRef: ElementRef, private http: HttpClient) {}
 
@@ -44,12 +45,13 @@ export class AppComponent {
       reader.readAsDataURL(file);
       reader.onload = () => {
         // called once readAsDataURL is completed
-        this.history.push({
+        const action = {
           id: this.createRandomString(),
           name: 'Select File: ' + file.name,
           image: reader.result,
-        });
-        this.originalUrl = this.url = reader.result; // add source to image
+        };
+        this.onAction(action);
+        this.url = reader.result; // add source to image
       };
     }
   }
@@ -72,12 +74,24 @@ export class AppComponent {
     });
   }
 
-  onRevertUrl(item = null) {
-    if (!item) {
-      this.url = this.originalUrl;
-    } else {
-      this.url = item.image;
+  onRevertUrl(item) {
+    this.url = item.image;
+    this.selectedHistoryItem = item;
+  }
+
+  onAction(item) {
+    const prevAction = this.selectedHistoryItem;
+    const matchedItem = this.history.find((x) => x.id === prevAction?.id);
+
+    if (matchedItem && prevAction) {
+      const indexMatchedItem = this.history.findIndex(
+        (x) => x.id === prevAction.id
+      );
+      this.history = this.history.slice(0, indexMatchedItem + 1);
     }
+    console.log('adding action to history', item);
+    this.selectedHistoryItem = item;
+    this.history.push(item);
   }
 
   createRandomString() {
@@ -85,6 +99,32 @@ export class AppComponent {
       Math.random().toString(36).substring(2, 15) +
       Math.random().toString(36).substring(2, 15)
     );
+  }
+
+  onSaveImage(image) {
+    const img = image.replace('image/png', 'image/octet-stream');
+    const a = document.createElement('A');
+    a.setAttribute('href', img);
+    a.setAttribute('download', 'my-image-processing-output.png');
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+
+  shouldShowOption(optionName, selectedTool) {
+    console.log('checking option', optionName, selectedTool);
+    const config = {
+      level: ['blur', 'opacity', 'contrast', 'scale', 'posterize'],
+      degree: ['rotate'],
+      flip: ['flip'],
+      size: ['resize'],
+      printText: ['printText'],
+      color: ['background']
+    };
+    if (!config[optionName]) {
+      return false;
+    }
+    return config[optionName].includes(selectedTool);
   }
 
   onSubmit(formData: any, type: string, url: string) {
@@ -97,7 +137,6 @@ export class AppComponent {
 
     switch (type) {
       case 'resize':
-      case 'cover':
         historyItem.name = `${type.toUpperCase()}: w=${formData.width}px, h=${
           formData.height
         }px`;
@@ -110,16 +149,33 @@ export class AppComponent {
       case 'opacity':
       case 'contrast':
       case 'scale':
+      case 'posterize':
+        if (type === 'contrast') {
+          alert('Contract\'s level value only valid for -1, 0, 1');
+          return;
+        }
         historyItem.name = `${type.toUpperCase()}: level=${formData.level}`;
         observable = this.http.post(`${this.apiUrl}/${type}`, {
           image: url,
           options: { level: formData.level },
         });
         break;
+      case 'background':
+        historyItem.name = `${type.toUpperCase()}: color=${formData.color}`;
+        const isValid = /^[0-9A-F]{6}$/i.test(formData.color);
+        if (!isValid) {
+          alert('Please enter valid hex color code');
+          return;
+        }
+        observable = this.http.post(`${this.apiUrl}/${type}`, {
+          image: url,
+          options: { color: formData.color },
+        });
+        break;
       case 'rotate':
         historyItem.name = `${type.toUpperCase()}: degree=${
           formData.degree
-        }&deg;`;
+        } degree`;
         observable = this.http.post(`${this.apiUrl}/${type}`, {
           image: url,
           options: { degree: formData.degree },
@@ -163,16 +219,19 @@ export class AppComponent {
         break;
     }
 
+    this.onLoading = true;
     const subscription = observable.pipe(retry(3)).subscribe({
       next: (res: any) => {
+        this.onLoading = false;
         historyItem.image = res.image;
-        this.history.push(historyItem);
+        this.onAction(historyItem);
         this.url = res.image;
         if (this.error) {
           this.error = null;
         }
       },
       error: (err) => {
+        this.onLoading = false;
         this.error = err;
         window.alert('Failed to process image');
         console.error('failed to process image', err);
