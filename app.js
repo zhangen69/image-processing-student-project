@@ -116,6 +116,19 @@ router.post('/contrast', async (req, res) => {
   }
 });
 
+router.post('/crop', async (req, res) => {
+  const { mode, x, y, w, h } = req.body.options;
+  const buffer = getBuffer(req.body.image);
+  try {
+    const image = await Jimp.read(buffer);
+    image.autocrop();
+    const output = await image.getBase64Async(Jimp.AUTO);
+    res.status(200).json({ code: 0, image: output });
+  } catch (error) {
+    res.status(500).json(error);
+  }
+});
+
 router.post('/scale', async (req, res) => {
   const { level } = req.body.options;
   const buffer = getBuffer(req.body.image);
