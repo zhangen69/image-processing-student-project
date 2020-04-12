@@ -1,7 +1,7 @@
 <div class="page-header">
   <div class="title">
     <h1>Image Processing Project</h1>
-    <h3>Please select an image to continue (supported images type: png, jpg, jpeg, tif, tiff):</h3>
+    <h3>Please select an image to continue (supported images types: png, jpg, jpeg, tif, tiff):</h3>
   </div>
   <div class="action-group">
     <input type="file" name="file" id="file" accept="image/x-png,image/jpeg,image/tif,image/tiff" (change)="onFileChanged($event)" #fileInput>
@@ -23,10 +23,11 @@
 </div>
 <div class="image-container">
   <div class="image-wrapper">
-    <img [src]="url" id="uploadedImage" *ngIf="url" #imageOutput>
+    <img [src]="url" id="uploadedImage" draggable="false" #imageOutput>
+    <div id="drawCanvas" [hidden]="selectedTool !== 'crop' && selectedTool !== 'printText'" #drawCanvas></div>
   </div>
   <div class="toolbars">
-    <h3>Toolbars</h3>
+    <h3>Tools</h3>
     <div class="tool-item" (click)="selectTool('resize')" [ngClass]="{'active': selectedTool === 'resize'}">Resize</div>
     <div class="tool-item" (click)="selectTool('blur')" [ngClass]="{'active': selectedTool === 'blur'}">Blur</div>
     <div class="tool-item" (click)="selectTool('invert')" [ngClass]="{'active': selectedTool === 'invert'}">Invert</div>
@@ -39,7 +40,7 @@
     <div class="tool-item" (click)="selectTool('printText')" [ngClass]="{'active': selectedTool === 'printText'}">Print Text</div>
     <div class="tool-item" (click)="selectTool('sepia')" [ngClass]="{'active': selectedTool === 'sepia'}">Sepia</div>
     <div class="tool-item" (click)="selectTool('posterize')" [ngClass]="{'active': selectedTool === 'posterize'}">Posterize</div>
-    <!-- <div class="tool-item" (click)="selectTool('background')" [ngClass]="{'active': selectedTool === 'background'}">Background</div> -->
+    <div class="tool-item" (click)="selectTool('crop')" [ngClass]="{'active': selectedTool === 'crop'}">Crop</div>
   </div>
   <div class="options-container" *ngIf="selectedTool">
     <h3>Options</h3>
@@ -76,6 +77,27 @@
           <input type="number" [(ngModel)]="formData.positionY">
         </div>
         <pre>Note: X and Y is the starting coordinate place the text</pre>
+        <pre>Tips: You're able to click image to draw a rectangle that will help to autofill the value of position x, and position y.</pre>
+      </div>
+      <!-- crop -->
+      <div class="resize-options" *ngIf="shouldShowOption('sizeWithPosition', selectedTool)">
+        <div class="form-group">
+          <label for="">Width</label>
+          <input type="number" [(ngModel)]="formData.width">
+        </div>
+        <div class="form-group">
+          <label for="">Height</label>
+          <input type="number" [(ngModel)]="formData.height">
+        </div>
+        <div class="form-group">
+          <label for="">Position X</label>
+          <input type="number" [(ngModel)]="formData.positionX">
+        </div>
+        <div class="form-group">
+          <label for="">Position Y</label>
+          <input type="number" [(ngModel)]="formData.positionY">
+        </div>
+        <pre>Tips: You're able to click image to draw a rectangle that will help to autofill the value of height, width, position x, and position y.</pre>
       </div>
       <!-- resize -->
       <div class="resize-options" *ngIf="shouldShowOption('size', selectedTool)">

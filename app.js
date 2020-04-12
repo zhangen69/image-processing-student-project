@@ -117,11 +117,11 @@ router.post('/contrast', async (req, res) => {
 });
 
 router.post('/crop', async (req, res) => {
-  const { mode, x, y, w, h } = req.body.options;
+  const { x, y, w, h } = req.body.options;
   const buffer = getBuffer(req.body.image);
   try {
     const image = await Jimp.read(buffer);
-    image.autocrop();
+    image.crop(x, y, w, h);
     const output = await image.getBase64Async(Jimp.AUTO);
     res.status(200).json({ code: 0, image: output });
   } catch (error) {

@@ -1,6 +1,6 @@
 import { environment } from './../environments/environment';
 import { Component, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
-import { fromEvent, from, Observable, asapScheduler } from 'rxjs';
+import { fromEvent, Observable } from 'rxjs';
 import { retry } from 'rxjs/operators';
 import { HttpClient } from '@angular/common/http';
 import * as Tiff from 'tiff.js';
@@ -10,11 +10,11 @@ import * as Tiff from 'tiff.js';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
 })
-export class AppComponent {
+export class AppComponent implements AfterViewInit {
   title = 'ng-image-processing-app';
   url = null;
   image = null;
-  @ViewChild('imageOutput') imageOutput: ElementRef;
+  @ViewChild('drawCanvas') drawCanvas: ElementRef;
   observer;
   selectedTool = null;
   selectedHistoryItem = null;
@@ -37,6 +37,9 @@ export class AppComponent {
   onLoading = false;
 
   constructor(private eleRef: ElementRef, private http: HttpClient) {}
+  ngAfterViewInit(): void {
+    this.onInitDrawer();
+  }
 
   onFileChanged(event) {
     const files = event.target.files;
@@ -65,6 +68,91 @@ export class AppComponent {
         this.url = dataURL; // add source to image
       };
     }
+  }
+
+  onInitDrawer() {
+    const canvas = this.drawCanvas.nativeElement;
+    if (!canvas) {
+      return;
+    }
+    const mouseOnClicked$ = fromEvent(canvas, 'click');
+    const mouseOnMoved$ = fromEvent(canvas, 'mousemove');
+
+    let element: HTMLElement = null;
+    const mouse = {
+      x: 0,
+      y: 0,
+      startX: 0,
+      startY: 0,
+    };
+
+    const setMousePosition = (e) => {
+      const ev = e || window.event; // Moz || IE
+      if (ev.pageX) {
+        // Moz
+        mouse.x = ev.pageX + window.pageXOffset;
+        mouse.y = ev.pageY + window.pageYOffset;
+      } else if (ev.clientX) {
+        // IE
+        mouse.x = ev.clientX + document.body.scrollLeft;
+        mouse.y = ev.clientY + document.body.scrollTop;
+      }
+    };
+
+    mouseOnClicked$.subscribe({
+      next: (event: MouseEvent) => {
+        if (element !== null) {
+          if (this.formData.text && this.selectedTool === 'crop') {
+            this.formData.height = element.offsetHeight;
+            this.formData.width = element.offsetWidth;
+          }
+          element.remove();
+          element = null;
+          canvas.style.cursor = 'default';
+          this.onAction({
+            id: this.createRandomString(),
+            name: `SET SIZE & POSITION: w=${this.formData.width}, h=${this.formData.height}, x=${this.formData.positionX}, y=${this.formData.positionY}`,
+            image: this.url,
+          });
+          console.log('finished.');
+        } else {
+          console.log('start to draw.');
+          this.formData.positionX = mouse.startX = event.offsetX;
+          this.formData.positionY = mouse.startY = event.offsetY;
+          element = document.createElement('div');
+          element.className = 'rectangle';
+          element.style.left = event.offsetX + 'px';
+          element.style.top = event.offsetY + 'px';
+          element.style.border = '1px solid #f00';
+          element.style.position = 'absolute';
+          if (this.formData.text && this.selectedTool === 'printText') {
+            element.innerHTML = this.formData.text;
+            element.style.fontSize = this.formData.fontSize.split('_')[2] + 'px';
+          }
+          canvas.appendChild(element);
+          canvas.style.cursor = 'crosshair';
+          console.log(
+            `position: x=${element.style.left} y=${element.style.top}`
+          );
+        }
+      },
+    });
+
+    mouseOnMoved$.subscribe({
+      next: (event: MouseEvent) => {
+        setMousePosition(event);
+        if (element !== null) {
+          const w = Math.abs(mouse.x - mouse.startX);
+          const h = Math.abs(mouse.y - mouse.startY);
+          element.style.width = w + 'px';
+          element.style.height = h + 'px';
+          element.style.left =
+            mouse.x - mouse.startX < 0 ? mouse.x + 'px' : mouse.startX + 'px';
+          element.style.top =
+            mouse.y - mouse.startY < 0 ? mouse.y + 'px' : mouse.startY + 'px';
+        }
+      },
+    });
   }
 
   selectTool(tool) {
@@ -116,7 +204,8 @@ export class AppComponent {
       flip: ['flip'],
       size: ['resize'],
       printText: ['printText'],
-      color: ['background']
+      color: ['background'],
+      sizeWithPosition: ['crop'],
     };
     if (!config[optionName]) {
       return false;
@@ -148,10 +237,10 @@ export class AppComponent {
       case 'scale':
       case 'posterize':
         if (type === 'contrast') {
-          alert('Contract\'s level value only valid for -1, 0, 1');
+          alert("Contract's level value only valid for -1, 0, 1");
           return;
         } else if (type === 'blur' && !Number.isInteger(formData.level)) {
-          alert('Blur\'s level must be integer');
+          alert("Blur's level must be integer");
           return;
         }
         historyItem.name = `${type.toUpperCase()}: level=${formData.level}`;
@@ -205,6 +294,20 @@ export class AppComponent {
           options: {
             font,
             text: formData.text,
+            x: formData.positionX,
+            y: formData.positionY,
+          },
+        });
+        break;
+      case 'crop':
+        historyItem.name = `${type.toUpperCase()}: size=${
+          formData.fontSize
+        }, x=${formData.positionX}, y=${formData.positionY}`;
+        observable = this.http.post(`${this.apiUrl}/${type}`, {
+          image: url,
+          options: {
+            w: formData.width,
+            h: formData.height,
             x: formData.positionX,
             y: formData.positionY,
           },
