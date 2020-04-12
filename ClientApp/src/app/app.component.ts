@@ -3,6 +3,7 @@ import { Component, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { fromEvent, from, Observable, asapScheduler } from 'rxjs';
 import { retry } from 'rxjs/operators';
 import { HttpClient } from '@angular/common/http';
+import * as Tiff from 'tiff.js';
 
 @Component({
   selector: 'app-root',
@@ -42,36 +43,32 @@ export class AppComponent {
     if (files && files.length > 0) {
       const reader = new FileReader();
       const file = files[files.length - 1];
-      reader.readAsDataURL(file);
+      if (file.type === 'image/tiff' || file.type === 'image/tif') {
+        reader.readAsArrayBuffer(file);
+      } else {
+        reader.readAsDataURL(file);
+      }
       reader.onload = () => {
+        let dataURL = reader.result;
+        // convert tiff to data URL
+        if (file.type === 'image/tiff' || file.type === 'image/tif') {
+          const tiff = new Tiff({ buffer: dataURL });
+          dataURL = tiff.toDataURL();
+        }
         // called once readAsDataURL is completed
         const action = {
           id: this.createRandomString(),
           name: 'Select File: ' + file.name,
-          image: reader.result,
+          image: dataURL,
         };
         this.onAction(action);
-        this.url = reader.result; // add source to image
+        this.url = dataURL; // add source to image
       };
     }
   }
 
   selectTool(tool) {
     this.selectedTool = tool;
-  }
-
-  onStart(image) {
-    const apiUrl = `${environment.apiUrl}/api/image/resize`;
-    const observer = this.http.post(apiUrl, {
-      image,
-      options: { width: 100, height: 100 },
-    });
-    observer.subscribe({
-      next: (res: any) => {
-        this.url = res.image;
-        console.log(res);
-      },
-    });
   }
 
   onRevertUrl(item) {
@@ -152,6 +149,9 @@ export class AppComponent {
       case 'posterize':
         if (type === 'contrast') {
           alert('Contract\'s level value only valid for -1, 0, 1');
+          return;
+        } else if (type === 'blur' && !Number.isInteger(formData.level)) {
+          alert('Blur\'s level must be integer');
           return;
         }
         historyItem.name = `${type.toUpperCase()}: level=${formData.level}`;

@@ -1,10 +1,10 @@
 <div class="page-header">
   <div class="title">
     <h1>Image Processing Project</h1>
-    <h3>Please select an image to continue:</h3>
+    <h3>Please select an image to continue (supported images type: png, jpg, jpeg, tif, tiff):</h3>
   </div>
   <div class="action-group">
-    <input type="file" name="file" id="file" accept="image/x-png,image/gif,image/jpeg" (change)="onFileChanged($event)" #fileInput>
+    <input type="file" name="file" id="file" accept="image/x-png,image/jpeg,image/tif,image/tiff" (change)="onFileChanged($event)" #fileInput>
     <button type="button" class="btn-select" (click)="fileInput.click()">Select File</button>
     <button type="button" class="btn-select" (click)="onSaveImage(url)" *ngIf="url">Save Image</button>
     <div class="history-wrapper dropdown">
