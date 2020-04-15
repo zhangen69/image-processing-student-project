@@ -103,7 +103,7 @@ export class AppComponent implements AfterViewInit {
     mouseOnClicked$.subscribe({
       next: (event: MouseEvent) => {
         if (element !== null) {
-          if (this.formData.text && this.selectedTool === 'crop') {
+          if (this.selectedTool === 'crop') {
             this.formData.height = element.offsetHeight;
             this.formData.width = element.offsetWidth;
           }
@@ -238,7 +238,7 @@ export class AppComponent implements AfterViewInit {
       case 'contrast':
       case 'scale':
       case 'posterize':
-        if (type === 'contrast') {
+        if (type === 'contrast' && (formData.level < -1 || formData.level > 1)) {
           alert("Contract's level value only valid for -1, 0, 1");
           return;
         } else if (type === 'blur' && !Number.isInteger(formData.level)) {
