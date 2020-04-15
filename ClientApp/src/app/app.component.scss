@@ -155,6 +155,9 @@
           user-select: none; /* Non-prefixed version, currently
                                   supported by Chrome, Opera and Firefox */
         }
+        select {
+          width: 100%;
+        }
       }
 
       pre {

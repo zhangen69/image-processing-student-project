@@ -129,6 +129,44 @@ router.post('/crop', async (req, res) => {
   }
 });
 
+router.post('/convolute', async (req, res) => {
+  const { type } = req.body.options;
+  const buffer = getBuffer(req.body.image);
+  try {
+    const image = await Jimp.read(buffer);
+    // default is lowpass matrix
+    let matrix = [
+      [1/9, 1/9, 1/9],
+      [1/9, 1/9, 1/9],
+      [1/9, 1/9, 1/9],
+    ];
+    if (type === 'highpass') {
+      matrix = [
+        [-1, -1, -1],
+        [-1, 8, -1],
+        [-1, -1, -1],
+      ]
+    } else if (type === 'directional') {
+      matrix = [
+        [-1, 0, 1],
+        [-1, 0, 1],
+        [-1, 0, 1],
+      ]
+    } else if (type === 'laplacian') {
+      matrix = [
+        [0, -1, 0],
+        [-1, 4, 1],
+        [0, -1, 0],
+      ]
+    }
+    image.convolute(matrix);
+    const output = await image.getBase64Async(Jimp.AUTO);
+    res.status(200).json({ code: 0, image: output });
+  } catch (error) {
+    res.status(500).json(error);
+  }
+});
+
 router.post('/scale', async (req, res) => {
   const { level } = req.body.options;
   const buffer = getBuffer(req.body.image);

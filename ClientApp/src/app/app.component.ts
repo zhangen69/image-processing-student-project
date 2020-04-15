@@ -30,6 +30,7 @@ export class AppComponent implements AfterViewInit {
     flipHorizontal: false,
     flipVertical: false,
     color: null,
+    type: 'lowpass'
   };
   apiUrl = `${environment.apiUrl}/api/image`;
   error = null;
@@ -206,6 +207,7 @@ export class AppComponent implements AfterViewInit {
       printText: ['printText'],
       color: ['background'],
       sizeWithPosition: ['crop'],
+      convolution: ['convolute'],
     };
     if (!config[optionName]) {
       return false;
@@ -311,6 +313,13 @@ export class AppComponent implements AfterViewInit {
             x: formData.positionX,
             y: formData.positionY,
           },
+        });
+        break;
+      case 'convolute':
+        historyItem.name = `${type.toUpperCase()}: type=${formData.type}`;
+        observable = this.http.post(`${this.apiUrl}/${type}`, {
+          image: url,
+          options: { type: formData.type },
         });
         break;
       default:

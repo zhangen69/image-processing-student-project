@@ -41,6 +41,7 @@
     <div class="tool-item" (click)="selectTool('sepia')" [ngClass]="{'active': selectedTool === 'sepia'}">Sepia</div>
     <div class="tool-item" (click)="selectTool('posterize')" [ngClass]="{'active': selectedTool === 'posterize'}">Posterize</div>
     <div class="tool-item" (click)="selectTool('crop')" [ngClass]="{'active': selectedTool === 'crop'}">Crop</div>
+    <div class="tool-item" (click)="selectTool('convolute')" [ngClass]="{'active': selectedTool === 'convolute'}">Convolution</div>
   </div>
   <div class="options-container" *ngIf="selectedTool">
     <h3>Options</h3>
@@ -132,6 +133,18 @@
         <div class="form-group">
           <label for="">Degree</label>
           <input type="number" [(ngModel)]="formData.degree">
+        </div>
+      </div>
+      <!-- convolute -->
+      <div class="resize-options" *ngIf="shouldShowOption('convolution', selectedTool)">
+        <div class="form-group">
+          <label for="">Type</label>
+          <select class="form-control" [(ngModel)]="formData.type">
+            <option [ngValue]="'lowpass'">Low-Pass Filter</option>
+            <option [ngValue]="'highpass'">High-Pass Filter</option>
+            <option [ngValue]="'directional'">Directional Filter</option>
+            <option [ngValue]="'laplacian'">Laplacian Filter</option>
+          </select>
         </div>
       </div>
       <!-- flip -->
