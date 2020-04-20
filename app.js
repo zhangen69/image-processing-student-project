@@ -1,6 +1,7 @@
 const express = require('express');
 const helmet = require('helmet');
 const bodyParser = require('body-parser');
+const path = require('path');
 const cors = require('cors');
 // const configure = require('@jimp/custom');
 // const circle = require('@jimp/plugin-circle');
@@ -257,6 +258,10 @@ router.post('/invert', async (req, res) => {
 // });
 
 app.use('/api/image', router);
+app.use('/', express.static(path.join(__dirname, './public')));
+router.use((req, res, next) => {
+  res.sendFile(path.join(__dirname, './public', 'index.html'));
+});
 
 app.listen(port, () => {
   console.log(`Listenning on: http://localhost:${port}`);
